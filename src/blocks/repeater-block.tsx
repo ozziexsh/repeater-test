@@ -1,13 +1,11 @@
 import { useState } from "react";
 import BlockFromObject from "./block-from-object";
 import { BlockProps, useBlocksStore } from "./common";
+import RepeaterCreateForm from "./repeater-create-form";
 
 export default function RepeaterBlock({ block, parent }: BlockProps) {
-  const blocks = useBlocksStore((state) =>
-    state.blocks.filter((b) => b.key.startsWith(`${block.key}.`))
-  );
-  const responses = useBlocksStore((state) =>
-    state.responses.filter((r) => r.key === block.key)
+  const response = useBlocksStore((state) =>
+    state.responses.find((r) => r.key === block.key)
   );
   const [open, setOpen] = useState(false);
 
@@ -15,7 +13,7 @@ export default function RepeaterBlock({ block, parent }: BlockProps) {
     <div>
       <h2>{block.title}</h2>
 
-      {responses.length > 0 ? (
+      {response?.payload?.length > 0 ? (
         <table>
           <thead>
             <tr>
@@ -24,10 +22,10 @@ export default function RepeaterBlock({ block, parent }: BlockProps) {
             </tr>
           </thead>
           <tbody>
-            {responses.map((response) => (
-              <tr key={response.id}>
-                <td>{response.payload?.school?.value}</td>
-                <td>{response.payload?.field_of_study?.value}</td>
+            {response?.payload?.map((row: any, i: number) => (
+              <tr key={i}>
+                <td>{row?.school?.value}</td>
+                <td>{row?.field_of_study?.value}</td>
               </tr>
             ))}
           </tbody>
@@ -39,13 +37,7 @@ export default function RepeaterBlock({ block, parent }: BlockProps) {
       ) : (
         <button onClick={() => setOpen(true)}>Add</button>
       )}
-      {open && (
-        <div>
-          {blocks.map((b) => (
-            <BlockFromObject key={b.key} block={b} parent={block} />
-          ))}
-        </div>
-      )}
+      {open && <RepeaterCreateForm block={block} />}
     </div>
   );
 }
