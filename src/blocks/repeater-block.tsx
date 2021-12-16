@@ -4,30 +4,45 @@ import { BlockProps, useBlocksStore } from "./common";
 import RepeaterCreateForm from "./repeater-create-form";
 
 export default function RepeaterBlock({ block, parent }: BlockProps) {
-  const response = useBlocksStore((state) =>
-    state.responses.find((r) => r.key === block.key)
+  const responses = useBlocksStore((state) =>
+    state.responses.filter((r) => r.key.startsWith(`${block.key}.`))
+  );
+  const blocks = useBlocksStore((state) =>
+    state.blocks.filter((b) => b.key.startsWith(`${block.key}.`))
   );
   const [open, setOpen] = useState(false);
+
+  const groupedResponses = {};
+  for (const response of responses) {
+    groupedResponses[response.payload?.group] ||=  [];
+    groupedResponses[response.payload?.group].push(response);
+  }
 
   return (
     <div>
       <h2>{block.title}</h2>
 
-      {response?.payload?.length > 0 ? (
+      {responses?.length > 0 ? (
         <table>
           <thead>
             <tr>
-              <th>School</th>
-              <th>Field of Study</th>
+              {blocks.map((b) => (
+                <th key={b.id}>{b.title}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {response?.payload?.map((row: any, i: number) => (
-              <tr key={i}>
-                <td>{row?.school?.value}</td>
-                <td>{row?.field_of_study?.value}</td>
-              </tr>
-            ))}
+            {Object.values(groupedResponses).map(
+              (groupedResponse: any, i: number) => (
+                <tr key={i}>
+                  {blocks.map((b, y) => (
+                    <td key={y}>
+                      {groupedResponse.find((x) => x.key === b.key)?.payload?.value}
+                    </td>
+                  ))}
+                </tr>
+              )
+            )}
           </tbody>
         </table>
       ) : null}
@@ -37,7 +52,7 @@ export default function RepeaterBlock({ block, parent }: BlockProps) {
       ) : (
         <button onClick={() => setOpen(true)}>Add</button>
       )}
-      {open && <RepeaterCreateForm block={block} />}
+      {open && <RepeaterCreateForm block={block} onCreate={() => setOpen(false)} />}
     </div>
   );
 }

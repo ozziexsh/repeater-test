@@ -2,15 +2,22 @@ import { createContext, useContext, useState } from "react";
 import { Block, Response } from "../types";
 import create from "zustand";
 import produce from "immer";
+import { v4 as uuid } from "uuid";
 
 let id = 0;
 
 export const useBlocksStore = create<{
   blocks: Block[];
   responses: Response[];
+  addResponse(res: Response): void;
+  addRepeater(res: Response[]): void;
 }>((set, get) => ({
   blocks: [],
   responses: [],
+  addResponse: (response) =>
+    set(produce((state) => state.responses.push(response))),
+  addRepeater: (responses) =>
+    set(produce((state) => state.responses.push(...responses)))
 }));
 
 export interface BlockProps {
@@ -36,7 +43,7 @@ export async function getInitialBlocks() {
       type: "text",
       meta: {},
       blockable_id: 1,
-      blockable_type: "application",
+      blockable_type: "application"
     },
     {
       id: ++id,
@@ -45,7 +52,7 @@ export async function getInitialBlocks() {
       type: "text",
       meta: {},
       blockable_id: 1,
-      blockable_type: "application",
+      blockable_type: "application"
     },
     {
       id: ++id,
@@ -54,7 +61,7 @@ export async function getInitialBlocks() {
       type: "text",
       meta: {},
       blockable_id: 1,
-      blockable_type: "application",
+      blockable_type: "application"
     },
     {
       id: ++id,
@@ -63,7 +70,7 @@ export async function getInitialBlocks() {
       type: "repeater",
       meta: {},
       blockable_id: 1,
-      blockable_type: "application",
+      blockable_type: "application"
     },
     {
       id: ++id,
@@ -72,7 +79,7 @@ export async function getInitialBlocks() {
       type: "text",
       meta: {},
       blockable_id: 1,
-      blockable_type: "application",
+      blockable_type: "application"
     },
     {
       id: ++id,
@@ -81,46 +88,88 @@ export async function getInitialBlocks() {
       type: "text",
       meta: {},
       blockable_id: 1,
-      blockable_type: "application",
-    },
+      blockable_type: "application"
+    }
   ];
 }
 
 export async function getInitialResponses() {
+  const group1 = uuid();
+  const group2 = uuid();
   return [
     {
       id: ++id,
       key: "name",
       payload: {
-        value: "My name",
+        value: "My name1"
       },
       respondable_id: 1,
-      respondable_type: "application",
+      respondable_type: "application"
     },
     {
       id: ++id,
-      key: "education",
-      payload: [
-        {
-          school: {
-            value: "school",
-          },
-          field_of_study: {
-            value: "something",
-          },
-        },
-        {
-          school: {
-            value: "another school",
-          },
-          field_of_study: {
-            value: "something else",
-          },
-        },
-      ],
+      key: "education.school",
+      payload: {
+        value: "My name1",
+        group: group1
+      },
       respondable_id: 1,
-      respondable_type: "application",
+      respondable_type: "application"
     },
+    {
+      id: ++id,
+      key: "education.field_of_study",
+      payload: {
+        value: "Eng",
+        group: group1
+      },
+      respondable_id: 1,
+      respondable_type: "application"
+    },
+    {
+      id: ++id,
+      key: "education.school",
+      payload: {
+        value: "My name2",
+        group: group2
+      },
+      respondable_id: 1,
+      respondable_type: "application"
+    },
+    {
+      id: ++id,
+      key: "education.field_of_study",
+      payload: {
+        value: "Phsyics",
+        group: group2
+      },
+      respondable_id: 1,
+      respondable_type: "application"
+    }
+    // {
+    //   id: ++id,
+    //   key: "education",
+    //   payload: [
+    //     {
+    //       school: {
+    //         value: "school"
+    //       },
+    //       field_of_study: {
+    //         value: "something"
+    //       }
+    //     },
+    //     {
+    //       school: {
+    //         value: "another school"
+    //       },
+    //       field_of_study: {
+    //         value: "something else"
+    //       }
+    //     }
+    //   ],
+    //   respondable_id: 1,
+    //   respondable_type: "application"
+    // }
   ];
 }
 
@@ -138,6 +187,6 @@ export function useResponse({ key, parent }: { key: string; parent?: Block }) {
   return {
     response,
     payload,
-    onPayloadChange,
+    onPayloadChange
   };
 }
